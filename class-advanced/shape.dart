@@ -25,6 +25,7 @@ void printArea(Shape shape) {
 }
 
 void main() {
+// we can use the abstract classes to define an interface that can be implemented by subclasses
   // we can use Shape as a type even though we cannot instantiate it
   // we can use the subclasses that implement Shape
   final Shape square = Square(10);
