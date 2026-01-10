@@ -22,6 +22,8 @@ abstract class Base {
 class Subclass implements Base {
   @override
   void foo() => print('foo');
+  @override
+  void bar() => print('subclass bar');
 }
 
 // if we use the extends keyword, we can only extend one class, and we must override abstract methods, but we can choose to override concrete methods
