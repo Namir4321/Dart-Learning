@@ -1,0 +1,21 @@
+{
+  "roots": [
+    "test"
+  ],
+  "packages": [
+    {
+      "name": "test",
+      "version": "0.0.0",
+      "dependencies": [],
+      "devDependencies": [
+        "pedantic"
+      ]
+    },
+    {
+      "name": "pedantic",
+      "version": "1.11.1",
+      "dependencies": []
+    }
+  ],
+  "configVersion": 1
+}
