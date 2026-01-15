@@ -13,3 +13,7 @@ void main() {
   print(list[4]);
   signIn("", "");
 }
+// Asseratin are enabled in debug mde
+// assertins are disabled in realse mde
+// assertins are nly a saftey net t catch runtime errr early
+// exceptin are triggered in debug and relase mde
