@@ -8,3 +8,6 @@ Future<void> main() async {
 
   await doubles.forEach(print);
 }
+// there are tw type f stream \
+// 1. Single Subscriptin
+// 2. Stream substricptin
