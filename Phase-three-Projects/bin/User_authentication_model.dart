@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 // This code demonstrates a simple user authentication model using the factory design pattern in Dart. It defines a UserList class to store user data, an abstract User class with a factory constructor for login, and two concrete classes (Admin and Student) that extend User. The main function tests the login functionality with valid and invalid credentials.
 class UserList {
   // Repository of users with their email, password, and role
@@ -46,15 +48,19 @@ abstract class User {
 // admin class which extend user class and override printRole method
 class Admin extends User {
   Admin(String email, String password) : super(email, password);
+  String loginTime = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now());
   @override
-  void printRole() => print('You are an Admin');
+  void printRole() =>
+      print('Login successful!\n' 'Welcome Admin \n' 'Login Time:$loginTime');
 }
 
 // student class which extend user class and override printRole method
 class Student extends User {
   Student(String email, String password) : super(email, password);
+  String loginTime = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now());
   @override
-  void printRole() => print('You are a Student');
+  void printRole() => print(
+      'Login successful!\n' 'Welcome Student \n' 'Login Time:$loginTime');
 }
 
 void main() {
@@ -69,6 +75,8 @@ void main() {
     user2.printRole();
     User user3 = User.login("stud@mail.com", "456");
     user3.printRole();
+    User user4 = User.login("student@mail.com", "wrongpassword");
+    user4.printRole();
   } catch (e) {
     print(e);
   }
