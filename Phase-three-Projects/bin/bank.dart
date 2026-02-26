@@ -114,8 +114,6 @@
 //   BankApp(acc).start();
 // }
 
-
-
 import 'dart:io';
 
 // --- 1. THE DATA LAYER (Abstract & Open/Closed) ---
@@ -185,7 +183,7 @@ class CheckingAccount extends Account {
 // --- 2. THE LOGIC LAYER (Single Responsibility) ---
 class Bank {
   final List<Account> _accounts = [];
-
+  final List<String> _accountHistory = [];
   void addAccount(Account acc) {
     _accounts.add(acc);
     print("${acc.accountType} Account created for ${acc.name}");
@@ -206,18 +204,32 @@ class BankApp {
 
   void start() {
     while (true) {
-      print("\n=== BANK MENU ===\n1. Open Account\n2. Deposit\n3. Withdraw\n4. Balance\n5. Exit");
+      print(
+          "\n=== BANK MENU ===\n1. Open Account\n2. Deposit\n3. Withdraw\n4. Balance\n5. Exit");
       stdout.write("Choice: ");
       String? choice = stdin.readLineSync();
 
       try {
         switch (choice) {
-          case "1": _handleOpenAccount(); break;
-          case "2": _handleTransaction("deposit"); break;
-          case "3": _handleTransaction("withdraw"); break;
-          case "4": _handleBalance(); break;
-          case "5": exit(0);
-          default: print("Invalid Choice.");
+          case "1":
+            _handleOpenAccount();
+            break;
+          case "2":
+            _handleTransaction("deposit");
+            break;
+          case "3":
+            _handleTransaction("withdraw");
+            break;
+          case "4":
+            _handleBalance();
+            break;
+          case "5":
+            _handleHistory();
+            break;
+          case "6":
+            exit(0);
+          default:
+            print("Invalid Choice.");
         }
       } catch (e) {
         print("System Error: ${e.toString()}");
@@ -238,8 +250,12 @@ class BankApp {
 
     if (type == "1") {
       banker.addAccount(SavingsAccount(name: name, id: id, balance: bal));
+      banker._accountHistory.add(
+          "Created Savings Account for $name with ID $id and balance $bal");
     } else {
       banker.addAccount(CheckingAccount(name: name, id: id, balance: bal));
+      banker._accountHistory.add(
+          "Created Checking Account for $name with ID $id and balance $bal");
     }
   }
 
@@ -253,8 +269,12 @@ class BankApp {
 
     if (type == "deposit") {
       acc.deposit(amt);
+      banker._accountHistory
+          .add("Deposited $amt to ${acc.accountType} Account ID $id");
     } else {
       acc.withdraw(amt);
+      banker._accountHistory
+          .add("Withdrew $amt from ${acc.accountType} Account ID $id");
     }
   }
 
@@ -262,7 +282,15 @@ class BankApp {
     stdout.write("Account ID: ");
     int id = int.tryParse(stdin.readLineSync() ?? "") ?? 0;
     Account acc = banker.findById(id);
-    print("Balance for ${acc.name} (${acc.accountType}): ${acc.currentBalance}");
+    print(
+        "Balance for ${acc.name} (${acc.accountType}): ${acc.currentBalance}");
+  }
+
+  void _handleHistory() {
+    print("\n=== ACCOUNT HISTORY ===");
+    for (var entry in banker._accountHistory) {
+      print(entry);
+    }
   }
 }
 
