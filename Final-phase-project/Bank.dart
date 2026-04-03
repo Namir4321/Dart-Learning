@@ -1,10 +1,9 @@
+import 'dart:io';
+
 class User {
   String email;
   String password;
-  String _pin;
-  User({required this.email, required this.password, required String pin})
-    : _pin = pin;
-  String get pin => _pin;
+  User({required this.email, required this.password});
 }
 
 class Validator {
@@ -66,8 +65,9 @@ class AuthService {
     if (emailExists) {
       throw UserAlreadyExistsException("Email Already registered");
     }
-    User newUser = User(email: email, password: password, pin: pin);
+    User newUser = User(email: email, password: password);
     _users.add(newUser);
+
     return newUser;
   }
 
@@ -78,6 +78,7 @@ class AuthService {
           throw InvalidCredentialsException("User not found or wrong password"),
     );
     _currentUser = validUser;
+
     return validUser;
   }
 
@@ -85,3 +86,59 @@ class AuthService {
     _currentUser = null;
   }
 }
+
+class BankUi {
+  final AuthService _service = AuthService();
+  void start() {
+    while (true) {
+      print("1. Login \n2. Register \n3. Exit");
+      int choice = int.tryParse(stdin.readLineSync()!) ?? 0;
+      try {
+        switch (choice) {
+          case 1:
+            _handleLogin();
+            break;
+          case 2:
+            _handleRegister();
+            break;
+          case 3:
+            exit(0);
+          default:
+            print("Invalid choice. Please try again.");
+        }
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
+
+  void _handleLogin() {
+    try {
+      stdout.write("Email: ");
+      String email = stdin.readLineSync()!;
+      stdout.write("Password: ");
+      String password = stdin.readLineSync()!;
+      User user = _service.login(email, password);
+      print("Login successful! Welcome ${user.email}");
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void _handleRegister() {
+    try {
+      stdout.write("Email: ");
+      String email = stdin.readLineSync()!;
+      stdout.write("Password: ");
+      String password = stdin.readLineSync()!;
+      stdout.write("Pin: ");
+      String pin = stdin.readLineSync()!;
+      User user = _service.register(email, password, pin);
+      print("Registration successful! Welcome ${user.email}");
+    } catch (e) {
+      print(e);
+    }
+  }
+}
+
+void main() => BankUi().start();
