@@ -1,0 +1,34 @@
+[
+  {
+    "email": "khan@gmail.com",
+    "password": "123456@",
+    "account": {
+      "id": "177539116400811",
+      "pin": "1234",
+      "balance": 90.0,
+      "transactions": [
+        {
+          "type": "transfer sent",
+          "amount": 10.0,
+          "time": "2026-04-05T17:43:33.057045"
+        }
+      ]
+    }
+  },
+  {
+    "email": "name@gmail.com",
+    "password": "123456@",
+    "account": {
+      "id": "1775391175528796",
+      "pin": "1234",
+      "balance": 110.0,
+      "transactions": [
+        {
+          "type": "transfer recevied",
+          "amount": 10.0,
+          "time": "2026-04-05T17:43:33.057045"
+        }
+      ]
+    }
+  }
+]
