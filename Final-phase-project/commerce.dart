@@ -47,6 +47,13 @@ class Product {
       "description": description,
     };
   }
+
+  void updateStock(int quantity) {
+    if (quantity > stock) {
+      throw InsufficientStockException("don't have enough stock");
+    }
+    stock = stock - quantity;
+  }
 }
 
 class CartItem {
@@ -105,9 +112,22 @@ class InvalidInputException implements Exception {
   String toString() => message;
 }
 
+class InsufficientStockException implements Exception {
+  final String message;
+  InsufficientStockException(this.message);
+  @override
+  String toString() => message;
+}
+
 class UserAlreadyExistsException implements Exception {
   final String message;
   UserAlreadyExistsException(this.message);
+  String toString() => message;
+}
+
+class InvalidProductException implements Exception {
+  final String message;
+  InvalidProductException(this.message);
   String toString() => message;
 }
 
@@ -119,31 +139,18 @@ class InvalidCredentialsException implements Exception {
 }
 
 class AuthService {
-  final List<User> _users = [];
+  List<User> _users = [];
+  // User _users = [];
   User? _currentuser;
-  final Validator _valid = Validator();
-  AuthService() {
-    _loadUser();
+  // final Validator _valid = Validator();
+  final DatabaseService _databaseService;
+  final Validator _valid;
+  AuthService(this._databaseService, this._valid) {
+    _users = _databaseService.loadData(
+      "users.json",
+      (json) => User.fromJson(json),
+    );
   }
-  void _loadUser() {
-    File file = File('users.json');
-    if (!file.existsSync()) return;
-    String jsonString = File('users.json').readAsStringSync();
-    List<dynamic> userMap = jsonDecode(jsonString);
-
-    for (var v in userMap) {
-      _users.add(User.fromJson(v as Map<String, dynamic>));
-    }
-  }
-
-  void _saveUser() {
-    List<Map<String, dynamic>> userMap = _users
-        .map((user) => user.toJson())
-        .toList();
-    String jsonString = jsonEncode(userMap);
-    File('users.json').writeAsStringSync(jsonString);
-  }
-
   User login(String email, String password) {
     User validUser = _users.firstWhere(
       (user) => user.email == email && user.password == password,
@@ -163,7 +170,134 @@ class AuthService {
     }
     User newUser = User(email: email, password: password);
     _users.add(newUser);
-    _saveUser();
+    _databaseService.saveData("users.json", _users, (user) => user.toJson());
     return newUser;
+  }
+
+  void logout() {
+    _currentuser = null;
+  }
+}
+
+class ProductService {
+  List<Product> _product = [];
+  final DatabaseService _databaseService;
+  ProductService(this._databaseService) {
+    _product = _databaseService.loadData(
+      "products.json",
+      (json) => Product.fromJson(json),
+    );
+  }
+  List<Product> listProducts() {
+    return _product;
+  }
+
+  Product findById(String id) {
+    return _product.firstWhere(
+      (prod) => prod.id == id,
+      orElse: () => throw InvalidProductException(
+        "there is no product associated with this id",
+      ),
+    );
+  }
+
+  void updateStock(String id, int quantity) {
+    Product product = findById(id);
+    product.updateStock(quantity);
+    _databaseService.saveData(
+      "products.json",
+      _product,
+      (product) => product.toJson(),
+    );
+  }
+}
+
+class OrderItem {
+  final Product product;
+  final int quantity;
+  final double price;
+  OrderItem({
+    required this.product,
+    required this.price,
+    required this.quantity,
+  });
+
+  OrderItem.fromJson(Map<String, dynamic> json)
+    : product = Product.fromJson(json['product'] as Map<String, dynamic>),
+      price = json['price'] as double,
+      quantity = json['quantity'] as int;
+  Map<String, dynamic> toJson() => {
+    'product': product.toJson(),
+    'quantity': quantity,
+    'price': price,
+  };
+}
+
+enum OrderStatus { pending, completed }
+
+class Order {
+  final String id;
+  final List<OrderItem> items;
+  final double totalAmount;
+  final String paymentMethod;
+  final OrderStatus status;
+  final DateTime timestamp;
+
+  Order({
+    required this.id,
+    required this.items,
+    required this.paymentMethod,
+    required this.status,
+    required this.timestamp,
+    required this.totalAmount,
+  });
+  Order.fromJson(Map<String, dynamic> json)
+    : items = (json['items'] as List<dynamic>)
+          .map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      id = json['id'] as String,
+      paymentMethod = json['paymentMethod'] as String,
+      status = OrderStatus.values.byName(json['status']),
+      timestamp = DateTime.parse(json['timestamp']),
+      totalAmount = (json['totalAmount'] as num).toDouble();
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'items': items.map((e) => e.toJson()).toList(),
+    'totalAmount': totalAmount,
+    'paymentMethod': paymentMethod,
+    'status': status.name,
+    'timestamp': timestamp.toIso8601String(),
+  };
+}
+
+class DatabaseService {
+  List<T> loadData<T>(
+    String fileName,
+    T Function(Map<String, dynamic>) fromJson,
+  ) {
+    List<T> items = [];
+    File file = File(fileName);
+    if (!file.existsSync()) return [];
+    String jsonString = file.readAsStringSync();
+    List<dynamic> userMap = jsonDecode(jsonString);
+    for (var v in userMap) {
+      // items.add(T.fromJson(v as Map<String, dynamic>));
+      items.add(fromJson(v as Map<String, dynamic>));
+    }
+    return items;
+  }
+
+  void saveData<T>(
+    String fileName,
+    List<T> items,
+    Map<String, dynamic> Function(T) toJson,
+  ) {
+    List<Map<String, dynamic>> userMap = items
+        .map((item) => toJson(item))
+        .toList();
+
+    String jsonString = jsonEncode(userMap);
+    File(fileName).writeAsStringSync(jsonString);
   }
 }
