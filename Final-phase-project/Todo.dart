@@ -2,12 +2,26 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'Bank.dart';
-import 'commerce.dart';
 
 class User {
   final String email;
   final String password;
-  User({required this.email, required this.password});
+  final List<Board> boards;
+  User({required this.email, required this.password, required this.boards});
+
+  User.fromJson(Map<String, dynamic> json)
+    : email = json["email"] as String,
+      password = json["password"] as String,
+      boards = (json['boards'] as List)
+          .map((b) => Board.fromJson(b as Map<String, dynamic>))
+          .toList();
+  Map<String, dynamic> toJson() {
+    return {
+      "email": email,
+      "password": password,
+      "boards": boards.map((b) => b.toJson()).toList(),
+    };
+  }
 }
 
 enum TaskStatus { TODO, IN_PROGRESS, DONE }
@@ -20,6 +34,21 @@ class Board {
   final List<Task> tasks;
 
   Board({required this.boardId, required this.name, required this.tasks});
+
+  Board.fromJson(Map<String, dynamic> json)
+    : boardId = json["boardId"] as String,
+      name = json["name"] as String,
+      tasks = (json['tasks'] as List)
+          .map((t) => Task.fromJson(t as Map<String, dynamic>))
+          .toList();
+
+  Map<String, dynamic> toJson() {
+    return {
+      "boardId": boardId,
+      "name": name,
+      "tasks": tasks.map((t) => t.toJson()).toList(),
+    };
+  }
 }
 
 class Task {
@@ -133,7 +162,7 @@ class AuthService {
     if (existing) {
       throw UserAlreadyExistsException("User already associated with us");
     }
-    User user = User(email: email, password: password);
+    User user = User(email: email, password: password, boards: []);
     _users.add(user);
     return user;
   }
