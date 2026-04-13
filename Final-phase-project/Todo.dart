@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'Bank.dart';
+import 'commerce.dart';
 
 class User {
   final String email;
@@ -37,6 +38,25 @@ class Task {
     required this.priority,
     required this.due,
   });
+
+  Task.fromJson(Map<String, dynamic> json)
+    : id = json["id"] as String,
+      title = json["title"] as String,
+      description = json["description"] as String,
+      status = TaskStatus.values.byName(json["status"]),
+      priority = TaskPriority.values.byName(json["priority"]),
+      due = DateTime.parse(json['due']);
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "title": title,
+      "description": description,
+      "status": status.name,
+      "priority": priority.name,
+      "due": due.toIso8601String(),
+    };
+  }
 }
 
 class Validator {
@@ -57,6 +77,13 @@ class Validator {
       );
     }
   }
+}
+
+class InvalidInputException implements Exception {
+  final String message;
+  InvalidInputException(this.message);
+  @override
+  String toString() => message;
 }
 
 class UserAlreadyExistsException implements Exception {
